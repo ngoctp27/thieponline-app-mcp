@@ -22,13 +22,6 @@ def _client():
     return _CLIENT
 
 
-_TOKEN_HINT = (
-    "Lỗi xác thực với thieponline (token hết hạn hoặc bị thu hồi). "
-    "Hãy đóng hết tab thieponline.app trong trình duyệt, lấy lại refresh_token mới "
-    "từ cookie sb-dudcjocrigjgnprdkijw-auth-token và cập nhật THIEPONLINE_REFRESH_TOKEN."
-)
-
-
 def _slim(g):
     if not g:
         return None
@@ -39,9 +32,14 @@ def _guard(fn):
     try:
         return fn()
     except RuntimeError as e:
+        # auth.py đã trả message chẩn đoán đầy đủ (hướng dẫn từng bước).
+        # Các lỗi khác (vd PostgREST) bọc thêm tiền tố cho rõ.
         msg = str(e)
-        if "Refresh" in msg or "401" in msg:
-            return {"error": _TOKEN_HINT, "detail": msg}
+        if msg.startswith(("Lỗi xác thực", "Lỗi kết nối", "Chưa có refresh_token")):
+            return {"error": msg}
+        if "401" in msg:
+            from .diagnostics import diagnose_refresh_error
+            return {"error": diagnose_refresh_error(401, {}), "detail": msg}
         return {"error": f"Lỗi khi gọi thieponline: {msg}"}
     except ValueError as e:
         return {"error": str(e)}
@@ -113,7 +111,23 @@ def export_guests_to_csv() -> dict:
     return _guard(run)
 
 
+def _validate_auth_or_exit():
+    """Xác thực với thieponline NGAY lúc khởi động. Thất bại → exit != 0 để MCP
+    client báo 'failed' thay vì 'running' với token chết. In hướng dẫn ra stderr."""
+    import sys
+    try:
+        _client().list_guests()  # gọi thật: refresh token + 1 query nhẹ
+    except Exception as e:
+        sys.stderr.write(
+            "\n[thieponline-guests] KHỞI ĐỘNG THẤT BẠI — không xác thực được với thieponline.\n\n"
+            + str(e) + "\n"
+        )
+        sys.stderr.flush()
+        sys.exit(1)
+
+
 def main():
+    _validate_auth_or_exit()
     mcp.run()
 
 

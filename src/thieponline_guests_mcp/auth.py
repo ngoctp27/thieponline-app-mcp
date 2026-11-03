@@ -15,7 +15,7 @@ import threading
 import urllib.request
 import urllib.error
 
-from . import config
+from . import config, diagnostics
 
 _LOCK = threading.Lock()  # ponytail: 1 process MCP, global lock đủ
 
@@ -69,10 +69,7 @@ class TokenProvider:
         # refresh token: cache file trước, rồi env
         self._refresh = _read_cache().get("refresh_token") or config.env_refresh_token()
         if not self._refresh and not self._access:
-            raise ValueError(
-                "Thiếu token. Đặt THIEPONLINE_REFRESH_TOKEN (khuyến nghị) "
-                "hoặc THIEPONLINE_ACCESS_TOKEN trong env."
-            )
+            raise ValueError(diagnostics.no_refresh_token_message())
 
     def _valid(self, skew=60):
         if not self._access:
@@ -83,14 +80,14 @@ class TokenProvider:
 
     def _do_refresh(self):
         if not self._refresh:
-            raise RuntimeError("Access token hết hạn và không có refresh_token để làm mới.")
+            raise RuntimeError(diagnostics.no_refresh_token_message())
         status, body = _http_post_json(
             f"{self.url}/auth/v1/token?grant_type=refresh_token",
             {"apikey": self.anon, "Content-Type": "application/json"},
             {"refresh_token": self._refresh},
         )
         if status != 200 or "access_token" not in body:
-            raise RuntimeError(f"Refresh thất bại [HTTP {status}]: {body}")
+            raise RuntimeError(diagnostics.diagnose_refresh_error(status, body))
         self._access = body["access_token"]
         self._exp = _jwt_exp(self._access)
         new_refresh = body.get("refresh_token")

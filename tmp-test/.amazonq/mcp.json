@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "thieponline-guests": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/ngoctp27/thieponline-app-mcp",
+        "thieponline-guests-mcp"
+      ],
+      "env": {
+        "THIEPONLINE_INVITATION_ID": "01a19d0f-f73f-7bcb-8586-3aa137e9762f",
+        "THIEPONLINE_REFRESH_TOKEN": "ppaj746vtnm7"
+      }
+    }
+  }
+}

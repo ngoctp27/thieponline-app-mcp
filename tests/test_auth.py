@@ -80,7 +80,7 @@ def test_refresh_failure_raises():
         p.get_access_token()
         assert False
     except RuntimeError as e:
-        assert "Refresh" in str(e)
+        assert "Lỗi xác thực" in str(e) or "không tồn tại" in str(e)
     print("PASS refresh fail raises")
 
 

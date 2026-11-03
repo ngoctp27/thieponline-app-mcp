@@ -64,9 +64,26 @@ def test_update_requires_field():
     print("PASS update báo lỗi khi thiếu field")
 
 
+class FailClient:
+    def list_guests(self, search=None):
+        raise RuntimeError("Lỗi xác thực với thieponline.\n\nNguyên nhân: token chết")
+
+
+def test_startup_validation_exits_on_auth_fail():
+    server._CLIENT = FailClient()
+    try:
+        server._validate_auth_or_exit()
+        assert False, "phải SystemExit khi auth fail lúc startup"
+    except SystemExit as e:
+        assert e.code == 1
+    server._CLIENT = None
+    print("PASS startup validation → exit(1) khi auth fail")
+
+
 if __name__ == "__main__":
     test_six_tools()
     test_list_smoke()
     test_add_defaults()
     test_update_requires_field()
+    test_startup_validation_exits_on_auth_fail()
     print("\nALL MCP TESTS PASS")
