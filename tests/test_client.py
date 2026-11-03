@@ -32,6 +32,7 @@ def test_slugify():
 
 def capture(responses):
     c = client.GuestClient(provider=FakeProvider())
+    c._invitation_slug = "phuocngoc-hagiang"  # bỏ qua fetch slug thật
     calls = []
 
     def fake_req(method, path, body=None, extra_headers=None, _retried=False):
@@ -124,6 +125,21 @@ def test_401_retry():
     print("PASS 401 → force_refresh → retry")
 
 
+def test_invite_url_built():
+    c, _ = capture([[{"id": "1", "name": "Em Thêu +", "slug": "em-theu"}]])
+    rows = c.list_guests()
+    assert rows[0]["invite_url"] == "https://thieponline.app/i/phuocngoc-hagiang/em-theu", rows[0]
+    print("PASS invite_url dựng đúng {base}/i/{inv}/{guest}")
+
+
+def test_invite_url_none_when_no_slug():
+    c = client.GuestClient(provider=FakeProvider())
+    c.invitation_id = None  # không có thiệp → không fetch, không dựng được url
+    assert c._invite_url({"slug": "x"}) is None
+    assert c._invite_url({"slug": None}) is None
+    print("PASS invite_url None khi thiếu slug")
+
+
 if __name__ == "__main__":
     test_slugify()
     test_list_query()
@@ -133,4 +149,6 @@ if __name__ == "__main__":
     test_update_requires_field()
     test_delete()
     test_401_retry()
+    test_invite_url_built()
+    test_invite_url_none_when_no_slug()
     print("\nALL CLIENT TESTS PASS")

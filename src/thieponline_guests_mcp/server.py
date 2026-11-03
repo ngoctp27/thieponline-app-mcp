@@ -25,7 +25,8 @@ def _client():
 def _slim(g):
     if not g:
         return None
-    return {"id": g.get("id"), "name": g.get("name"), "invite_message": g.get("invite_message")}
+    return {"id": g.get("id"), "name": g.get("name"),
+            "invite_message": g.get("invite_message"), "invite_url": g.get("invite_url")}
 
 
 def _guard(fn):

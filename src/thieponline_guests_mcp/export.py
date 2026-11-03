@@ -4,7 +4,7 @@ import csv
 import io
 
 OUT = "Danh_sach_khach_moi_cuoi.csv"
-HEADERS = ["STT", "Tên khách", "Lời nhắn"]
+HEADERS = ["STT", "Tên khách", "Lời nhắn", "Link thiệp"]
 
 
 def build_csv(guests):
@@ -12,7 +12,7 @@ def build_csv(guests):
     w = csv.writer(buf)
     w.writerow(HEADERS)
     for i, g in enumerate(guests, start=1):
-        w.writerow([i, g.get("name") or "", g.get("invite_message") or ""])
+        w.writerow([i, g.get("name") or "", g.get("invite_message") or "", g.get("invite_url") or ""])
     return buf.getvalue()
 
 

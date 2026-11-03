@@ -10,7 +10,7 @@ class FakeClient:
     def list_guests(self, search=None):
         self.search = search
         return [
-            {"id": "1", "name": "Em Thêu +", "invite_message": "hi", "slug": "em-theu"},
+            {"id": "1", "name": "Em Thêu +", "invite_message": "hi", "slug": "em-theu", "invite_url": "https://thieponline.app/i/inv/em-theu"},
             {"id": "2", "name": "ngoctp", "invite_message": "", "slug": "ngoctp"},
         ]
 
@@ -45,7 +45,7 @@ def test_six_tools():
 def test_list_smoke():
     server._CLIENT = FakeClient()
     data = _payload(asyncio.run(server.mcp.call_tool("list_guests", {"search": "em"})))
-    assert len(data) == 2 and data[0] == {"id": "1", "name": "Em Thêu +", "invite_message": "hi"}
+    assert len(data) == 2 and data[0] == {"id": "1", "name": "Em Thêu +", "invite_message": "hi", "invite_url": "https://thieponline.app/i/inv/em-theu"}
     assert server._CLIENT.search == "em"
     print("PASS list_guests smoke")
 

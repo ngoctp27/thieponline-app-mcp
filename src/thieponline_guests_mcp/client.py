@@ -15,6 +15,8 @@ import urllib.parse
 from . import auth, config
 
 GUEST_TABLE = "invitation_guests"
+INVITATION_TABLE = "invitations"
+WEB_BASE = "https://thieponline.app"  # URL thiệp: {WEB_BASE}/i/{invitation_slug}/{guest_slug}
 DEFAULT_SALUTATION = "Thân Mời"
 _EXTRA = {"đ": "d", "Đ": "d"}
 
@@ -35,6 +37,7 @@ class GuestClient:
         self.url = config.SUPABASE_URL.rstrip("/")
         self.anon = config.SUPABASE_ANON_KEY
         self.invitation_id = config.invitation_id()
+        self._invitation_slug = None  # cache slug thiệp
 
     def _headers(self, extra=None):
         h = {
@@ -65,6 +68,28 @@ class GuestClient:
                 detail = raw
             raise RuntimeError(f"PostgREST {method} {path} HTTP {e.code}: {detail}")
 
+    def invitation_slug(self):
+        """Lấy slug của thiệp (cache). Cần để dựng URL thiệp gửi khách."""
+        if self._invitation_slug is None and self.invitation_id:
+            _, rows = self._request(
+                "GET", f"{INVITATION_TABLE}?id=eq.{self.invitation_id}&select=slug")
+            if rows:
+                self._invitation_slug = rows[0].get("slug")
+        return self._invitation_slug
+
+    def _invite_url(self, guest):
+        """{WEB_BASE}/i/{invitation_slug}/{guest_slug}; None nếu thiếu slug."""
+        inv = self.invitation_slug()
+        gslug = guest.get("slug") if guest else None
+        if inv and gslug:
+            return f"{WEB_BASE}/i/{inv}/{gslug}"
+        return None
+
+    def _attach_url(self, guest):
+        if guest:
+            guest["invite_url"] = self._invite_url(guest)
+        return guest
+
     def list_guests(self, search=None):
         q = "select=id,name,salutation,invite_message,slug,created_at&order=created_at.asc"
         if self.invitation_id:
@@ -72,11 +97,11 @@ class GuestClient:
         if search:
             q += f"&name=ilike.*{urllib.parse.quote(search)}*"
         _, rows = self._request("GET", f"{GUEST_TABLE}?{q}")
-        return rows or []
+        return [self._attach_url(g) for g in (rows or [])]
 
     def get_guest(self, guest_id):
         _, rows = self._request("GET", f"{GUEST_TABLE}?id=eq.{guest_id}&select=*")
-        return rows[0] if rows else None
+        return self._attach_url(rows[0]) if rows else None
 
     def add_guest(self, name, invite_message=None, salutation=None, invitation_id=None):
         inv = invitation_id or self.invitation_id
@@ -94,7 +119,7 @@ class GuestClient:
             body["invite_message"] = invite_message
         _, rows = self._request("POST", GUEST_TABLE, body,
                                 extra_headers={"Prefer": "return=representation"})
-        return rows[0] if rows else None
+        return self._attach_url(rows[0]) if rows else None
 
     def update_guest(self, guest_id, name=None, invite_message=None, salutation=None):
         patch = {}
@@ -109,7 +134,7 @@ class GuestClient:
             raise ValueError("Không có field nào để cập nhật")
         _, rows = self._request("PATCH", f"{GUEST_TABLE}?id=eq.{guest_id}", patch,
                                 extra_headers={"Prefer": "return=representation"})
-        return rows[0] if rows else None
+        return self._attach_url(rows[0]) if rows else None
 
     def delete_guest(self, guest_id):
         self._request("DELETE", f"{GUEST_TABLE}?id=eq.{guest_id}")

@@ -10,15 +10,15 @@ from thieponline_guests_mcp import export
 
 def test_build_csv():
     guests = [
-        {"name": "Em Thêu +", "invite_message": "Lời nhắn ❤️"},
+        {"name": "Em Thêu +", "invite_message": "Lời nhắn ❤️", "invite_url": "https://thieponline.app/i/inv/em-theu"},
         {"name": "Vợ chồng anh Vinh", "invite_message": ""},
         {"name": "ngoctp", "invite_message": "Đến dự nhé"},
     ]
     rows = list(csv.reader(io.StringIO(export.build_csv(guests))))
-    assert rows[0] == ["STT", "Tên khách", "Lời nhắn"]
+    assert rows[0] == ["STT", "Tên khách", "Lời nhắn", "Link thiệp"]
     assert len(rows) == 4
-    assert rows[1] == ["1", "Em Thêu +", "Lời nhắn ❤️"]
-    assert rows[2] == ["2", "Vợ chồng anh Vinh", ""]
+    assert rows[1] == ["1", "Em Thêu +", "Lời nhắn ❤️", "https://thieponline.app/i/inv/em-theu"]
+    assert rows[2] == ["2", "Vợ chồng anh Vinh", "", ""]
     print("PASS build_csv")
 
 
@@ -28,7 +28,7 @@ def test_export_bom():
     assert n == 1
     assert open(tmp, "rb").read().startswith(b"\xef\xbb\xbf")
     rows = list(csv.reader(io.StringIO(open(tmp, encoding="utf-8-sig").read())))
-    assert rows[1] == ["1", "Đặng Thị Đào", "hi"]
+    assert rows[1] == ["1", "Đặng Thị Đào", "hi", ""]
     os.unlink(tmp)
     print("PASS export BOM + tiếng Việt")
 

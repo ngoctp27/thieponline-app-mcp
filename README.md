@@ -10,12 +10,12 @@ MCP server để AI agent quản lý khách mời trên [thieponline.app](https:
 
 | Tool | Mô tả |
 |---|---|
-| `list_guests(search="")` | Liệt kê khách; `search` lọc theo tên (không phân biệt hoa thường). |
+| `list_guests(search="")` | Liệt kê khách; `search` lọc theo tên. Mỗi khách kèm `invite_url` (link thiệp gửi khách). |
 | `get_guest(guest_id)` | Chi tiết 1 khách theo id (uuid). |
 | `add_guest(name, invite_message="", salutation="")` | Thêm khách. `name` bắt buộc; `salutation` trống → mặc định `Thân Mời`. slug tự sinh từ tên. |
 | `update_guest(guest_id, name="", invite_message="", salutation="")` | Sửa khách; chỉ truyền field muốn đổi. Đổi `name` cập nhật slug. |
 | `delete_guest(guest_id)` | Xóa khách (không hoàn tác). |
-| `export_guests_to_csv()` | Xuất tất cả khách ra `Danh_sach_khach_moi_cuoi.csv` (cột STT, Tên khách, Lời nhắn). |
+| `export_guests_to_csv()` | Xuất CSV `Danh_sach_khach_moi_cuoi.csv` (cột STT, Tên khách, Lời nhắn, Link thiệp). |
 
 > Ghi chú: RSVP (xác nhận dự) lưu ở bảng riêng, chỉ khách tự điền qua trang công khai — server này không ghi RSVP.
 
