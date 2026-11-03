@@ -6,21 +6,22 @@ from thieponline_guests_mcp import diagnostics as dg
 def test_already_used_gives_steps():
     m = dg.diagnose_refresh_error(400, {"error_code": "refresh_token_already_used", "msg": "already used"})
     assert "đã được dùng rồi" in m
-    assert "Đóng HẾT tab" in m and "Console" in m and "mcp.json" in m
+    assert "ĐÓNG HẾT tab" in m and "Console" in m and "mcp.json" in m
+    assert "ĐĂNG XUẤT" in m and "ĐĂNG NHẬP" in m  # hướng dẫn logout/login lấy token mới
     assert "token.json" in m  # nhắc xoá cache
     print("PASS already_used → hướng dẫn từng bước")
 
 
 def test_not_valid():
     m = dg.diagnose_refresh_error(400, {"error_code": "validation_failed", "msg": "Refresh token is not valid"})
-    assert "không tồn tại hoặc sai định dạng" in m and "Đóng HẾT tab" in m
+    assert "không tồn tại hoặc sai định dạng" in m and "ĐÓNG HẾT tab" in m
     print("PASS token not valid → hướng dẫn")
 
 
 def test_network_error_no_token_steps():
     m = dg.diagnose_refresh_error(503, {})
     assert "Lỗi kết nối" in m and "thử lại" in m.lower()
-    assert "Đóng HẾT tab" not in m  # lỗi mạng không bảo lấy token mới
+    assert "ĐÓNG HẾT tab" not in m  # lỗi mạng không bảo lấy token mới
     print("PASS lỗi mạng → không đòi token mới")
 
 

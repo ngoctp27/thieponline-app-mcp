@@ -46,6 +46,8 @@ Cần [uv](https://docs.astral.sh/uv/) (`uvx`) cài sẵn. `uvx` tự tải pack
 
 ## Lấy 2 giá trị cấu hình
 
+> **Làm đúng thứ tự để token không chết ngay:** nếu token báo hết hạn, hãy **đăng xuất (logout) rồi đăng nhập (login) lại** thieponline.app để Supabase cấp session hoàn toàn mới, lấy `refresh_token`, **rồi đóng hết tab thieponline.app** trước khi dán vào MCP.
+
 Đăng nhập [thieponline.app](https://thieponline.app) trên trình duyệt, mở trang quản lý khách (`/guests`), rồi mở DevTools (F12).
 
 ### `THIEPONLINE_INVITATION_ID`
@@ -108,6 +110,8 @@ Nhanh nhất: mở [thieponline.app/guests](https://thieponline.app/guests) (đ�
 > Meo: neu Console chan dan (canh bao "Allow pasting"), go `allow pasting` roi Enter, sau do dan lai.
 
 > **Quan trọng — token xoay vòng:** Supabase refresh token dùng 1 lần rồi đổi. Nếu trình duyệt đang mở thieponline.app, nó sẽ tự refresh và làm token bạn copy hết hạn. Hãy **đóng hết tab thieponline.app** trước khi copy token cho MCP. Server lưu token xoay vòng vào `~/.thieponline-guests-mcp/token.json`, nên sau lần seed đầu tiên nó tự duy trì.
+>
+> **Nếu token đã hết hạn / báo lỗi xác thực:** đăng xuất (logout) khỏi thieponline.app → đăng nhập (login) lại → lấy `refresh_token` mới bằng đoạn JS ở trên → đóng hết tab thieponline.app → dán token mới vào `mcp.json` → xoá cache cũ `rm ~/.thieponline-guests-mcp/token.json` → restart MCP client.
 
 ## Dành cho AI agent
 

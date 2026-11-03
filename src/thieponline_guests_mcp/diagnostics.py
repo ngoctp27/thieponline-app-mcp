@@ -5,18 +5,22 @@ Human nhìn console log của Supabase (vd 'refresh_token_already_used') sẽ kh
 xử lý. Module này dịch mã lỗi thành các bước thao tác rõ ràng.
 """
 
-# các bước lấy token mới — dùng chung, nhắc đúng quy trình tránh token chết lại
+# các bước lấy token mới — dùng chung, nhắc đúng quy trình tránh token chết lại.
+# Logout + login lại đảm bảo Supabase cấp session HOÀN TOÀN MỚI (refresh_token chưa
+# bị xoay vòng), tránh copy nhầm token đã chết.
 _STEPS_GET_TOKEN = (
     "Cách lấy refresh_token MỚI (làm đúng thứ tự để token không chết ngay):\n"
-    "  1. Đóng HẾT tab thieponline.app trong trình duyệt (kể cả tab chạy nền) —\n"
-    "     nếu còn mở, trình duyệt tự refresh và giết token bạn vừa copy.\n"
-    "  2. Mở 1 tab mới → vào https://thieponline.app/guests → đăng nhập nếu cần.\n"
-    "  3. Nhấn F12 → tab Console → dán đoạn JS trong README (mục 'Chrome Console')\n"
+    "  1. Mở https://thieponline.app → ĐĂNG XUẤT (logout) khỏi tài khoản.\n"
+    "  2. ĐĂNG NHẬP (login) lại — Supabase cấp session mới, refresh_token còn nguyên.\n"
+    "  3. Vào trang https://thieponline.app/guests.\n"
+    "  4. Nhấn F12 → tab Console → dán đoạn JS trong README (mục 'Chrome Console')\n"
     "     → Enter. Nó in ra khối env gồm THIEPONLINE_INVITATION_ID + THIEPONLINE_REFRESH_TOKEN.\n"
-    "  4. Copy giá trị THIEPONLINE_REFRESH_TOKEN, rồi ĐÓNG tab đó lại ngay.\n"
-    "  5. Dán token mới vào khối \"env\" của server thieponline-guests trong mcp.json.\n"
-    "  6. Xoá file cache token cũ: rm ~/.thieponline-guests-mcp/token.json\n"
-    "  7. Restart MCP client (Kiro), gọi lại tool."
+    "  5. Copy giá trị THIEPONLINE_REFRESH_TOKEN.\n"
+    "  6. ĐÓNG HẾT tab thieponline.app (kể cả tab chạy nền) — nếu còn mở, trình duyệt\n"
+    "     tự refresh và giết token bạn vừa copy.\n"
+    "  7. Dán token mới vào khối \"env\" của server thieponline-guests trong mcp.json.\n"
+    "  8. Xoá file cache token cũ: rm ~/.thieponline-guests-mcp/token.json\n"
+    "  9. Restart MCP client (Kiro), gọi lại tool."
 )
 
 
