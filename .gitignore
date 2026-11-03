@@ -20,3 +20,4 @@ check_file.py
 
 # workspace agent config
 .kiro/
+tmp-test/
