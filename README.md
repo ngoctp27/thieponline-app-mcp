@@ -69,6 +69,44 @@ print(json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))["refresh
 PY
 ```
 
+## Cách nhanh — lấy cả 2 giá trị bằng Chrome Console (JS)
+
+Nhanh nhất: mở [thieponline.app/guests](https://thieponline.app/guests) (đã đăng nhập), nhấn F12 → tab **Console**, dán đoạn JS dưới đây và Enter. Nó tự đọc `invitation_id`, decode `refresh_token`, rồi in sẵn khối `env` để copy-paste thẳng vào `mcp.json`:
+
+```js
+(() => {
+  const ref = "dudcjocrigjgnprdkijw";
+  const base = `sb-${ref}-auth-token`;
+  const readCookie = n => document.cookie.split("; ").find(c => c.startsWith(n + "="))?.split("=").slice(1).join("=");
+  const b64urlToJson = s => {
+    s = s.replace(/^base64-/, "").replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    const bin = atob(s);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder("utf-8").decode(bytes));
+  };
+  // session: cookie chia .0/.1, hoac cookie/localStorage gop
+  let raw;
+  const p0 = readCookie(base + ".0");
+  if (p0) raw = decodeURIComponent(p0) + decodeURIComponent(readCookie(base + ".1") || "");
+  else { raw = readCookie(base) || localStorage.getItem(base); if (raw) raw = decodeURIComponent(raw); }
+  if (!raw) { console.error("Khong tim thay session. Ban da dang nhap thieponline.app chua?"); return; }
+
+  const session = b64urlToJson(raw);
+  const invitation = readCookie("lastActiveInvitationId") || localStorage.getItem("lastActiveInvitationId");
+
+  console.log("THIEPONLINE_INVITATION_ID =", invitation);
+  console.log("THIEPONLINE_REFRESH_TOKEN =", session.refresh_token);
+  console.log("\n--- Copy khoi env duoi vao mcp.json ---");
+  console.log(JSON.stringify({
+    THIEPONLINE_INVITATION_ID: invitation,
+    THIEPONLINE_REFRESH_TOKEN: session.refresh_token,
+  }, null, 2));
+})();
+```
+
+> Meo: neu Console chan dan (canh bao "Allow pasting"), go `allow pasting` roi Enter, sau do dan lai.
+
 > **Quan trọng — token xoay vòng:** Supabase refresh token dùng 1 lần rồi đổi. Nếu trình duyệt đang mở thieponline.app, nó sẽ tự refresh và làm token bạn copy hết hạn. Hãy **đóng hết tab thieponline.app** trước khi copy token cho MCP. Server lưu token xoay vòng vào `~/.thieponline-guests-mcp/token.json`, nên sau lần seed đầu tiên nó tự duy trì.
 
 ## Dành cho AI agent

@@ -89,6 +89,34 @@ p1 = "...phần .1..."
 raw = p0.replace("base64-", "") + p1
 print(json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))["refresh_token"])
 PY</code></pre>
+
+  <h3>Cách nhanh — Chrome Console (JS)</h3>
+  <p>Mở thieponline.app/guests (đã đăng nhập) → F12 → tab <strong>Console</strong> → dán đoạn JS dưới, Enter. Nó in sẵn khối <code>env</code> để copy vào <code>mcp.json</code>:</p>
+  <pre><code>(() =&gt; {
+  const ref = "dudcjocrigjgnprdkijw";
+  const base = `sb-${ref}-auth-token`;
+  const readCookie = n =&gt; document.cookie.split("; ").find(c =&gt; c.startsWith(n + "="))?.split("=").slice(1).join("=");
+  const b64urlToJson = s =&gt; {
+    s = s.replace(/^base64-/, "").replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    const bin = atob(s);
+    const bytes = Uint8Array.from(bin, c =&gt; c.charCodeAt(0));
+    return JSON.parse(new TextDecoder("utf-8").decode(bytes));
+  };
+  let raw;
+  const p0 = readCookie(base + ".0");
+  if (p0) raw = decodeURIComponent(p0) + decodeURIComponent(readCookie(base + ".1") || "");
+  else { raw = readCookie(base) || localStorage.getItem(base); if (raw) raw = decodeURIComponent(raw); }
+  if (!raw) { console.error("Khong tim thay session. Da dang nhap chua?"); return; }
+  const session = b64urlToJson(raw);
+  const invitation = readCookie("lastActiveInvitationId") || localStorage.getItem("lastActiveInvitationId");
+  console.log(JSON.stringify({
+    THIEPONLINE_INVITATION_ID: invitation,
+    THIEPONLINE_REFRESH_TOKEN: session.refresh_token,
+  }, null, 2));
+})();</code></pre>
+  <p>Nếu Console chặn dán: gõ <code>allow pasting</code> rồi Enter, dán lại.</p>
+
   <blockquote><strong>Token xoay vòng:</strong> Supabase refresh token dùng 1 lần rồi đổi. Đóng hết tab thieponline.app trước khi copy token cho MCP. Server lưu token xoay vòng vào <code>~/.thieponline-guests-mcp/token.json</code> nên tự duy trì sau lần seed đầu.</blockquote>
 
   <h2>Bảo mật</h2>
