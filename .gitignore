@@ -1,0 +1,22 @@
+# secrets / local env
+.env
+secrets/
+.thieponline-guests-mcp/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# local-only artifacts (not part of the MCP package)
+Danh_sach_khach_moi_cuoi.csv
+Danh_sach_khach_moi_cuoi.xlsx
+build_danh_sach_cuoi.py
+check_file.py
+.playwright-mcp/
+
+# workspace agent config
+.kiro/
